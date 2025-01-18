@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const mysql = require('mysql2/promise'); // promise 기반 사용
+const mysql = require('mysql2/promise'); 
 const pool = mysql.createPool({
   host:"madcamp-wk4-db.cv3dstdglqkx.ap-northeast-2.rds.amazonaws.com",
   user: "root",
@@ -8,7 +8,6 @@ const pool = mysql.createPool({
   database: "withYou" 
 });
 
-// 연결 테스트 함수
 const testConnection = async () => {
   try {
     const connection = await pool.getConnection();
@@ -19,7 +18,6 @@ const testConnection = async () => {
   }
 };
 
-// pool과 testConnection을 내보내기
 module.exports = {
   testConnection,
   pool,

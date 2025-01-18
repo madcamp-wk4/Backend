@@ -41,6 +41,48 @@ jobs:
         run: |
           ssh playground-umc-7th 'npm install --prefix /opt/app/'
 
+      - name: Configure Nginx for HTTPS
+        run: |
+          ssh playground-umc-7th '
+            sudo apt update &&
+            sudo apt install -y nginx certbot python3-certbot-nginx &&
+            echo "server {
+                listen 80;
+                listen [::]:80;
+                server_name _;
+                return 301 https://$host$request_uri;
+            }
+            server {
+                listen 443 ssl;
+                server_name _;
+
+                ssl_certificate /etc/letsencrypt/live/$IP_ADDRESS/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/$IP_ADDRESS/privkey.pem;
+
+                location / {
+                    proxy_pass http://localhost:3000;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade \$http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host \$host;
+                    proxy_cache_bypass \$http_upgrade;
+                }
+            }" | sudo tee /etc/nginx/sites-available/default
+            sudo ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default &&
+            sudo nginx -t &&
+            sudo systemctl restart nginx
+          '
+        env:
+          IP_ADDRESS: ${{ secrets.EC2_HOST }}
+
+      - name: Enable HTTPS with Certbot (IP Address)
+        run: |
+          ssh playground-umc-7th '
+            sudo certbot certonly --nginx --register-unsafely-without-email --agree-tos -d $IP_ADDRESS
+          '
+        env:
+          IP_ADDRESS: ${{ secrets.EC2_HOST }}
+
       - name: Copy systemd service file
         run: |
           ssh playground-umc-7th '
@@ -49,7 +91,7 @@ jobs:
             After=network.target
 
             [Service]
-            User=${USER}
+            User=ubuntu
             ExecStart=/usr/bin/npm run dev --prefix /opt/app/
             Restart=always
 

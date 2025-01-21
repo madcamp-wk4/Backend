@@ -1,23 +1,92 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// // This is your Prisma schema file,
+// // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-generator client {
-  provider = "prisma-client-js"
-}
+ generator client {
+   provider = "prisma-client-js"
+ }
 
-datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
-}
+ datasource db {
+   provider = "mysql"
+   url      = env("DATABASE_URL")
+ }
 
-enum Role {
+
+
+
+// model User {
+//   user_id             Int      @id @default(autoincrement())
+//   name           String
+//   email          String   @unique
+//   image_url      String?
+//   status         Role     @default(SOLO)
+//   createdAt      DateTime @default(now())
+//   loverAsUser1   Lover[]  @relation("user1") // User가 Lover의 user1Id로 연결된 관계
+//   loverAsUser2   Lover[]  @relation("user2") // User가 Lover의 user2Id로 연결된 
+//   messages       Messages[] @relation("message-user")
+//   dateRecord     DateWithLover[] @relation("dating-record")
+//   trust          Int?
+//   skinship       Int?
+//   admit          Int?
+//   present        Int?
+//   together_time  Int?
+//   feature        String?
+//   toRemember     String?
+//   location       String?
+// }
+
+// model Lover {
+//   loveTableId        Int      @id @default(autoincrement())
+//   user1     User     @relation("user1", fields: [user1Id], references: [user_id],  onDelete: Cascade) // User1 관계 설정
+//   user1Id   Int
+//   user2     User     @relation("user2", fields: [user2Id], references: [user_id]) // User2 관계 설정
+//   user2Id   Int
+//   createdAt DateTime @default(now())
+
+//   @@unique([user1Id, user2Id]) // User1과 User2 간의 1:1 관계 보장
+// }
+
+// model Messages { // 모든 메세지 저장
+//   messageId Int @id @default(autoincrement())
+//   sender Role? 
+//   text String
+//   user User @relation("message-user", fields: [userId], references: [user_id], onDelete: Cascade)
+//   userId Int 
+//   // user와 다:1 관계 
+// }
+
+// model Message_Result { // Messages에서 sender가 user인것만 모아서 요약하기 쿼리 짜고 -> 여기에 저장 
+//    id       Int      @id @default(autoincrement()) 
+//    //user  User @relation(fields: [])
+//    activity_type String  // 
+//    location String // location 여러개이면 이거 어떻게 저장하지? mysql에는 한 속성에 리스트가 들어갈 수가 없잖아 
+//    mood String 
+//    purpose String 
+// }
+
+
+// model DateWithLover {  // 데이트 목록 정리 
+//   id Int @id @default(autoincrement())
+//   dateTitle String 
+//   bigTopic String
+//   smallTopic String 
+//   score Int 
+//   user User @relation("dating-record", fields: [userId],references: [user_id], onDelete: Cascade )
+//   userId  Int 
+// }
+enum Sweet {
   SOLO
   COUPLE
-  AI
-  ME
+}
+enum MessageCategory {
+  LOCATION    // 장소
+  ACTIVITY    // 활동
+  EMOTION_ME  // 나의 감정
+  EMOTION_YOU // 상대방의 감정
+  UPDATE      // 상대방에 대해 알아야 할 부분
+  NOTHING  //아무 의미 없는 내용
 }
 
 
@@ -25,59 +94,144 @@ model User {
   user_id             Int      @id @default(autoincrement())
   name           String
   email          String   @unique
+  password		String
   image_url      String?
-  status         Role     @default(SOLO)
+  status         Sweet     @default(SOLO)
   createdAt      DateTime @default(now())
-  loverAsUser1   Lover[]  @relation("user1") // User가 Lover의 user1Id로 연결된 관계
-  loverAsUser2   Lover[]  @relation("user2") // User가 Lover의 user2Id로 연결된 
-  messages       Messages[] @relation("message-user")
-  dateRecord     DateWithLover[] @relation("dating-record")
+  loverUser1   Lover[]  @relation("user1") // User가 Lover의 user1Id로 연결된 관계
+  loverUser2   Lover[]  @relation("user2") // User가 Lover의 user2Id로 연결된
+  DateRecords   DateRecords[] @relation()
+  Messages       Messages[] @relation()
+  MessageAnalysis MessageAnalysis[] @relation()
+  NextQuestions  NextQuestions[] @relation()
+  LoverProfile   LoverProfile[] @relation()
   trust          Int?
   skinship       Int?
   admit          Int?
   present        Int?
   together_time  Int?
   feature        String?
-  toRemember     String?
+  summarize     String?
   location       String?
 }
 
 model Lover {
-  loveTableId        Int      @id @default(autoincrement())
-  user1     User     @relation("user1", fields: [user1Id], references: [user_id],  onDelete: Cascade) // User1 관계 설정
-  user1Id   Int
-  user2     User     @relation("user2", fields: [user2Id], references: [user_id]) // User2 관계 설정
-  user2Id   Int
-  createdAt DateTime @default(now())
+  lover_id   Int   @id @default(autoincrement())  // 기본 키 (자동 증가)
+  user1Id    Int   // 첫 번째 유저
+  user2Id    Int   // 두 번째 유저
+  accepted   Boolean @default(false)  // 요청 수락 여부 (false = 대기 중, true = 커플)
+  createdAt  DateTime @default(now())  // 요청 생성 시간
+  recievedAt  DateTime?  // 요청 수락시간(nullable)
 
-  @@unique([user1Id, user2Id]) // User1과 User2 간의 1:1 관계 보장
+  // 두 명의 유저를 연결하는 관계 설정
+  user1      User   @relation("user1", fields: [user1Id], references: [user_id])
+  user2      User   @relation("user2", fields: [user2Id], references: [user_id])
+
+  @@unique([user1Id, user2Id]) // 같은 두 유저가 중복 요청할 수 없도록 설정
 }
 
-model Messages { // 모든 메세지 저장
-  messageId Int @id @default(autoincrement())
-  sender Role? 
-  text String
-  user User @relation("message-user", fields: [userId], references: [user_id], onDelete: Cascade)
-  userId Int 
-  // user와 다:1 관계 
+//----------------------------------------------------------
+
+model DateRecords {
+  recordId   Int      @id @default(autoincrement())  
+  userId     Int      
+  user       User     @relation(fields: [userId], references: [user_id], onDelete: Cascade)
+  image_url		String?
+  date       DateTime // 데이트한 날짜
+  summarize   String   // 사용자가 입력한 요약
+  location String
+  activity   String   // 사용자가 입력한 활동
+  Message    Messages[] @relation()
+  DateAnalysisRequest DateAnalysisRequest[] @relation()
+  LoverAnalysisRequest LoverAnalysisRequest[] @relation()
+  createdAt  DateTime @default(now())  
 }
 
-model Message_Result { // Messages에서 sender가 user인것만 모아서 요약하기 쿼리 짜고 -> 여기에 저장 
-   id       Int      @id @default(autoincrement()) 
-   //user  User @relation(fields: [])
-   activity_type String  // 
-   location String // location 여러개이면 이거 어떻게 저장하지? mysql에는 한 속성에 리스트가 들어갈 수가 없잖아 
-   mood String 
-   purpose String 
+model Messages {
+  messageId  Int      @id @default(autoincrement())  
+  userId     Int      
+  user       User     @relation(fields: [userId], references: [user_id], onDelete: Cascade) 
+  text       String   // 유저가 작성한 메시지
+  createdAt  DateTime @default(now())  
+  MessageAnalysis MessageAnalysis[] @relation()
+  // 데이트 기록 참조 (이 메시지가 특정 데이트와 연결된 경우)
+  dateRecordId  Int?  
+  dateRecord    DateRecords? @relation(fields: [dateRecordId], references: [recordId], onDelete: Cascade)
 }
 
+model MessageAnalysis {
+  analysisId  Int      @id @default(autoincrement())  
+  userId      Int      
+  user        User     @relation(fields: [userId], references: [user_id], onDelete: Cascade)
+  messageId   Int      // 분석 대상 메시지 ID (없을 수도 있음)
+  message     Messages? @relation(fields: [messageId], references: [messageId], onDelete: Cascade)
+  category    MessageCategory // 메시지 카테고리
+  extractedData String  // 분석된 정보 (예: "카페에서 시간을 보냄", "요즘 스트레스를 많이 받음")
+  createdAt   DateTime @default(now())  
+}
 
-model DateWithLover {  // 데이트 목록 정리 
-  id Int @id @default(autoincrement())
-  dateTitle String 
-  bigTopic String
-  smallTopic String 
-  score Int 
-  user User @relation("dating-record", fields: [userId],references: [user_id], onDelete: Cascade )
-  userId  Int 
+model NextQuestions {
+  questionId   Int      @id @default(autoincrement())  
+  userId       Int      
+  user         User     @relation(fields: [userId], references: [user_id], onDelete: Cascade)
+  question     String   // AI가 다음에 질문할 내용
+  category     MessageCategory // 질문의 카테고리
+  createdAt    DateTime @default(now())  
+}
+
+// ---------------------------------------------------------------------------------------
+
+model DateAnalysisRequest {
+  requestId     Int      @id @default(autoincrement())  
+  recordId      Int      
+  dateRecord    DateRecords @relation(fields: [recordId], references: [recordId], onDelete: Cascade)
+  message_total   String 
+  status        String   @default("pending") // 요청 상태 (pending, processing, completed)
+  DateAnalysisResult DateAnalysisResult[] @relation()
+  createdAt     DateTime @default(now())  
+}
+
+model DateAnalysisResult {
+  resultId       Int      @id @default(autoincrement())  
+  requestId      Int      
+  request        DateAnalysisRequest @relation(fields: [requestId], references: [requestId], onDelete: Cascade)
+  mainCategory1   String  // 대분류 
+  mainCategory2   String  // 대분류 
+  subCategory1    String  // 소분류 
+  subCategory2    String  // 소분류
+  aiScore        Float?  // AI가 평가한 점수 (0~100)
+  reason		String // 이유
+  createdAt      DateTime @default(now())  
+}
+
+//-------------------------------------------------------------------------------------------
+
+model LoverAnalysisRequest {
+  requestId     Int      @id @default(autoincrement())  
+  recordId      Int      
+  dateRecord    DateRecords @relation(fields: [recordId], references: [recordId], onDelete: Cascade)
+  messageTotal  String   // 총 메시지 내용 (CamelCase로 수정)
+  status        String   @default("pending") // 요청 상태 (pending, processing, completed)
+  createdAt     DateTime @default(now())  
+}
+
+model LoverProfile {
+  loverProfileId Int      @id @default(autoincrement())  
+  userId         Int      // 프로필을 소유한 사용자 ID
+  user           User     @relation(fields: [userId], references: [user_id], onDelete: Cascade)
+  name           String   // 애인의 이름 (문자열로 직접 입력)
+  status         Sweet    @default(SOLO)  // 애인의 상태 (기본 SOLO)
+  trust          Int?     // 신뢰도
+  skinship       Int?     // 스킨십 정도
+  admit          Int?     // 인정 정도
+  present        Int?     // 선물 주고 받은 횟수
+  togetherTime   Int?     // 함께한 시간 (CamelCase로 수정)
+  feature        String?  // 애인의 특징
+  memorize       String?  // 애인에 대한 기억해야하는 내용
+  location       String?  // 애인의 위치 정보
+  imageUrl       String?  // 애인의 이미지 (CamelCase로 수정)
+  lastAnalyzedRecordId Int?      // 마지막으로 분석한 기록 ID
+  lastAnalyzedAt       DateTime? // 마지막 분석 시점
+  createdAt      DateTime @default(now())  
+  updatedAt      DateTime @updatedAt
 }

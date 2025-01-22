@@ -220,7 +220,7 @@ model LoverAnalysisRequest {
 model LoverProfile {
   loverProfileId Int      @id @default(autoincrement())  
   userId         Int      // 프로필을 소유한 사용자 ID
-  user           User     @relation(fields: [userId], references: [user_id], onDelete: Cascade)
+  user           User?     @relation(fields: [userId], references: [user_id], onDelete: Cascade)
   name           String   // 애인의 이름 (문자열로 직접 입력)
   status         Sweet    @default(SOLO)  // 애인의 상태 (기본 SOLO)
   trust          Int?     // 신뢰도

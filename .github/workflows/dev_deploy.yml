@@ -12,13 +12,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
           echo "$EC2_SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-
           cat >>~/.ssh/config <<END
           Host playground-umc-7th
             HostName $EC2_HOST
@@ -30,80 +28,130 @@ jobs:
           EC2_USER: ubuntu
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-
       - name: Copy Workspace
         run: |
           ssh playground-umc-7th 'sudo mkdir -p /opt/app'
           ssh playground-umc-7th 'sudo chown ubuntu:ubuntu /opt/app'
           scp -r ./[!.]* playground-umc-7th:/opt/app
-
       - name: Install dependencies
         run: |
           ssh playground-umc-7th 'npm install --prefix /opt/app/'
-
-      - name: Configure Nginx for HTTPS
-        run: |
-          ssh playground-umc-7th '
-            sudo apt update &&
-            sudo apt install -y nginx certbot python3-certbot-nginx &&
-            echo "server {
-                listen 80;
-                listen [::]:80;
-                server_name _;
-                return 301 https://$host$request_uri;
-            }
-            server {
-                listen 443 ssl;
-                server_name _;
-
-                ssl_certificate /etc/letsencrypt/live/$IP_ADDRESS/fullchain.pem;
-                ssl_certificate_key /etc/letsencrypt/live/$IP_ADDRESS/privkey.pem;
-
-                location / {
-                    proxy_pass http://localhost:3000;
-                    proxy_http_version 1.1;
-                    proxy_set_header Upgrade \$http_upgrade;
-                    proxy_set_header Connection 'upgrade';
-                    proxy_set_header Host \$host;
-                    proxy_cache_bypass \$http_upgrade;
-                }
-            }" | sudo tee /etc/nginx/sites-available/default
-            sudo ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default &&
-            sudo nginx -t &&
-            sudo systemctl restart nginx
-          '
-        env:
-          IP_ADDRESS: ${{ secrets.EC2_HOST }}
-
-      - name: Enable HTTPS with Certbot (IP Address)
-        run: |
-          ssh playground-umc-7th '
-            sudo certbot certonly --nginx --register-unsafely-without-email --agree-tos -d $IP_ADDRESS
-          '
-        env:
-          IP_ADDRESS: ${{ secrets.EC2_HOST }}
-
       - name: Copy systemd service file
         run: |
           ssh playground-umc-7th '
             echo "[Unit]
             Description=UMC 7th Project
             After=network.target
-
             [Service]
-            User=ubuntu
+            User=${USER}
             ExecStart=/usr/bin/npm run dev --prefix /opt/app/
             Restart=always
-
             [Install]
             WantedBy=multi-user.target" | sudo tee /etc/systemd/system/app.service
           '
-
       - name: Enable systemd service
         run: |
           ssh playground-umc-7th 'sudo systemctl daemon-reload'
           ssh playground-umc-7th 'sudo systemctl enable app'
-
       - name: Restart systemd service
         run: |
           ssh playground-umc-7th 'sudo systemctl restart app'
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+
+#       - name: Configure SSH
+#         run: |
+#           mkdir -p ~/.ssh
+#           echo "$EC2_SSH_KEY" > ~/.ssh/id_rsa
+#           chmod 600 ~/.ssh/id_rsa
+
+#           cat >>~/.ssh/config <<END
+#           Host playground-umc-7th
+#             HostName $EC2_HOST
+#             User $EC2_USER
+#             IdentityFile ~/.ssh/id_rsa
+#             StrictHostKeyChecking no
+#           END
+#         env:
+#           EC2_USER: ubuntu
+#           EC2_HOST: ${{ secrets.EC2_HOST }}
+#           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+
+#       - name: Copy Workspace
+#         run: |
+#           ssh playground-umc-7th 'sudo mkdir -p /opt/app'
+#           ssh playground-umc-7th 'sudo chown ubuntu:ubuntu /opt/app'
+#           scp -r ./[!.]* playground-umc-7th:/opt/app
+
+#       - name: Install dependencies
+#         run: |
+#           ssh playground-umc-7th 'npm install --prefix /opt/app/'
+
+#       - name: Configure Nginx for HTTPS
+#         run: |
+#           ssh playground-umc-7th '
+#             sudo apt update &&
+#             sudo apt install -y nginx certbot python3-certbot-nginx &&
+#             echo "server {
+#                 listen 80;
+#                 listen [::]:80;
+#                 server_name _;
+#                 return 301 https://$host$request_uri;
+#             }
+#             server {
+#                 listen 443 ssl;
+#                 server_name _;
+
+#                 ssl_certificate /etc/letsencrypt/live/$IP_ADDRESS/fullchain.pem;
+#                 ssl_certificate_key /etc/letsencrypt/live/$IP_ADDRESS/privkey.pem;
+
+#                 location / {
+#                     proxy_pass http://localhost:3000;
+#                     proxy_http_version 1.1;
+#                     proxy_set_header Upgrade \$http_upgrade;
+#                     proxy_set_header Connection 'upgrade';
+#                     proxy_set_header Host \$host;
+#                     proxy_cache_bypass \$http_upgrade;
+#                 }
+#             }" | sudo tee /etc/nginx/sites-available/default
+#             sudo ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default &&
+#             sudo nginx -t &&
+#             sudo systemctl restart nginx
+#           '
+#         env:
+#           IP_ADDRESS: ${{ secrets.EC2_HOST }}
+
+#       - name: Enable HTTPS with Certbot (IP Address)
+#         run: |
+#           ssh playground-umc-7th '
+#             sudo certbot certonly --nginx --register-unsafely-without-email --agree-tos -d $IP_ADDRESS
+#           '
+#         env:
+#           IP_ADDRESS: ${{ secrets.EC2_HOST }}
+
+#       - name: Copy systemd service file
+#         run: |
+#           ssh playground-umc-7th '
+#             echo "[Unit]
+#             Description=UMC 7th Project
+#             After=network.target
+
+#             [Service]
+#             User=ubuntu
+#             ExecStart=/usr/bin/npm run dev --prefix /opt/app/
+#             Restart=always
+
+#             [Install]
+#             WantedBy=multi-user.target" | sudo tee /etc/systemd/system/app.service
+#           '
+
+#       - name: Enable systemd service
+#         run: |
+#           ssh playground-umc-7th 'sudo systemctl daemon-reload'
+#           ssh playground-umc-7th 'sudo systemctl enable app'
+
+#       - name: Restart systemd service
+#         run: |
+#           ssh playground-umc-7th 'sudo systemctl restart app'

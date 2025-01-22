@@ -17,9 +17,14 @@ app.get('/', (req, res) => {
 app.get('/hello', (req, res) => {
     res.send("TEST FOR")
 })
+
 // API 경로 설정
 app.use('/signIn', signupRoutes); // 회원가입 라우트 연결
 app.use('/login', loginRoutes);   // 로그인 라우트 연결
+
+// 데이터베이스 연결 테스트
+testConnection();
+
 
 // 서버 실행
 //const HOST = '13.124.6.237'; // 배포된 서버의 IP 주소 : main에서만 테스트할 수 있음 

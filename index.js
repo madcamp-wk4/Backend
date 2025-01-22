@@ -1,33 +1,32 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const bodyParser = require("body-parser");
+const dateRecordsRoutes = require("./routes/dateRecords");
+const messageRoutes = require("./routes/message");
+const messageAnalysisRoutes = require("./routes/messageAnalysis");
+const setupSwagger = require("./swagger");
+require("dotenv").config(); // 환경변수 중요
+const cors = require("cors");
 const app = express();
 
 // Middleware
 app.use(bodyParser.json());
+app.use(cors());
+app.use(express.json());
+// Routes
+app.use("/date-records", dateRecordsRoutes);
+app.use("/messages", messageRoutes);
+app.use("/message-analysis", messageAnalysisRoutes);
 
-// 라우터 가져오기
-const signupRoutes = require('./login/signup'); // 경로 확인
-const loginRoutes = require('./login/login'); // 경로 확인
-
-// 기본 경로
-app.get('/', (req, res) => {
-    res.send('Hello, Express!');
+// Root route
+app.get("/", (req, res) => {
+  res.send("Welcome to the DateRecords API");
 });
 
-app.get('/hello', (req, res) => {
-    res.send("TEST FOR")
-})
+// Swagger UI
+setupSwagger(app);
 
-// API 경로 설정
-app.use('/signIn', signupRoutes); // 회원가입 라우트 연결
-app.use('/login', loginRoutes);   // 로그인 라우트 연결
-
-// 데이터베이스 연결 테스트
-testConnection();
-
-
-// 서버 실행
-//const HOST = '13.124.6.237'; // 배포된 서버의 IP 주소 : main에서만 테스트할 수 있음 
-const PORT = 3000;          // 사용할 포트 번호
-
-app.listen(PORT);
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});

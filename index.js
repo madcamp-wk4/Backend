@@ -9,6 +9,10 @@ app.get('/', (req, res) => {
   res.send('Hello, Express!');
 });
 
+app.get('/hello', (req, res) => {
+    res.send("TEST FOR")
+})
+
 // 데이터베이스 연결 테스트
 testConnection();
 

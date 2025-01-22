@@ -182,3 +182,111 @@ paths:
                         example: "2025-01-22T12:00:00.000Z"
         500:
           description: Internal server error.
+  /score-record:
+    post:
+      summary: Classify and score message analysis results.
+      description: Takes a `recordId`, fetches analyzed messages, sends them to the Gemini API for classification and scoring, and saves the results to the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recordId:
+                  type: integer
+                  description: The ID of the record to fetch message analysis data for.
+              required:
+                - recordId
+      responses:
+        '201':
+          description: Classification and scoring completed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Scoring and classification completed successfully!
+                  data:
+                    type: object
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            requestId:
+                              type: string
+                              description: The ID of the request associated with the results.
+                            mainCategory1:
+                              type: string
+                              description: The first main category.
+                            mainCategory2:
+                              type: string
+                              description: The second main category.
+                            subCategory1:
+                              type: string
+                              description: The first subcategory.
+                            subCategory2:
+                              type: string
+                              description: The second subcategory.
+                            aiScore:
+                              type: number
+                              format: float
+                              description: The AI-generated score.
+                            reason:
+                              type: string
+                              description: Explanation for the score.
+        '404':
+          description: No analyzed messages found for the given `recordId`.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No analyzed messages found for the given recordId.
+        '500':
+          description: Failed to process scoring and classification.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Failed to process scoring and classification.
+                  error:
+                    type: string
+                    description: The error message.
+
+components:
+  schemas:
+    ScoringResult:
+      type: object
+      properties:
+        requestId:
+          type: string
+          description: The ID of the request associated with the results.
+        mainCategory1:
+          type: string
+          description: The first main category.
+        mainCategory2:
+          type: string
+          description: The second main category.
+        subCategory1:
+          type: string
+          description: The first subcategory.
+        subCategory2:
+          type: string
+          description: The second subcategory.
+        aiScore:
+          type: number
+          format: float
+          description: The AI-generated score.
+        reason:
+          type: string
+          description: Explanation for the score.

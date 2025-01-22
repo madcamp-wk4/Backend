@@ -201,8 +201,8 @@ model DateAnalysisResult {
   mainCategory2   String  // 대분류 
   subCategory1    String  // 소분류 
   subCategory2    String  // 소분류
-  aiScore        Float?  // AI가 평가한 점수 (0~100)
-  reason		String // 이유
+  aiScore        String  // AI가 평가한 점수 (0~100)
+  reason		String@db.Text // 이유
   createdAt      DateTime @default(now())  
 }
 

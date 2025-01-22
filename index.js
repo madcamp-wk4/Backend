@@ -1,18 +1,32 @@
-const express = require('express');
-const { testConnection } = require('./DB/db'); // testConnection 가져오기
-require('dotenv').config();
-
+const express = require("express");
+const bodyParser = require("body-parser");
+const dateRecordsRoutes = require("./routes/dateRecords");
+const messageRoutes = require("./routes/message");
+const messageAnalysisRoutes = require("./routes/messageAnalysis");
+const setupSwagger = require("./swagger");
+require("dotenv").config(); // 환경변수 중요
+const cors = require("cors");
 const app = express();
 
-// Express 라우터
-app.get('/', (req, res) => {
-  res.send('Hello, Express!');
+// Middleware
+app.use(bodyParser.json());
+app.use(cors());
+app.use(express.json());
+// Routes
+app.use("/date-records", dateRecordsRoutes);
+app.use("/messages", messageRoutes);
+app.use("/message-analysis", messageAnalysisRoutes);
+
+// Root route
+app.get("/", (req, res) => {
+  res.send("Welcome to the DateRecords API");
 });
 
-// 데이터베이스 연결 테스트
-testConnection();
+// Swagger UI
+setupSwagger(app);
 
-const PORT = 3000;
+// Start server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });

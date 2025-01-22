@@ -4,14 +4,6 @@
 // // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
- generator client {
-   provider = "prisma-client-js"
- }
-
- datasource db {
-   provider = "mysql"
-   url      = env("DATABASE_URL")
- }
 
 
 
@@ -76,6 +68,16 @@
 //   user User @relation("dating-record", fields: [userId],references: [user_id], onDelete: Cascade )
 //   userId  Int 
 // }
+
+ generator client {
+   provider = "prisma-client-js"
+ }
+
+ datasource db {
+   provider = "mysql"
+   url      = env("DATABASE_URL")
+ }
+
 enum Sweet {
   SOLO
   COUPLE
@@ -130,7 +132,7 @@ model Lover {
   @@unique([user1Id, user2Id]) // 같은 두 유저가 중복 요청할 수 없도록 설정
 }
 
-//----------------------------------------------------------
+//-------------------------------------------------------------------------------------------
 
 model DateRecords {
   recordId   Int      @id @default(autoincrement())  
@@ -179,7 +181,7 @@ model NextQuestions {
   createdAt    DateTime @default(now())  
 }
 
-// ---------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------
 
 model DateAnalysisRequest {
   requestId     Int      @id @default(autoincrement())  

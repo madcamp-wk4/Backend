@@ -1,0 +1,184 @@
+openapi: 3.0.0
+info:
+  title: DateRecords API
+  version: 1.0.0
+  description: API for managing date records
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /date-records:
+    post:
+      summary: Create a new Date Record
+      description: Add a new date record to the database
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  example: 1
+                image_url:
+                  type: string
+                date:
+                  type: string
+                  format: date
+                summarize:
+                  type: string
+                location:
+                  type: string
+                activity:
+                  type: string
+                messages:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      text:
+                        type: string
+      responses:
+        200:
+          description: Success
+        400:
+          description: Bad Request
+  /messages:
+    post:
+      summary: Save a user message
+      description: Save a user message to the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                text:
+                  type: string
+                dateRecordId:
+                  type: integer
+      responses:
+        201:
+          description: Message saved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      messageId:
+                        type: integer
+                      userId:
+                        type: integer
+                      text:
+                        type: string
+                      dateRecordId:
+                        type: integer   
+                      createdAt:
+                        type: string
+                        format: date-time
+        500:
+          description: Failed to save message
+  /message-analysis/analyze-message:
+    post:
+      summary: Analyze a specific message
+      description: Analyze a specific message using Gemini API and save the results.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messageId:
+                  type: integer
+                  example: 1
+      responses:
+        201:
+          description: Message analysis completed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Message analyzed successfully!"
+                  data:
+                    type: object
+                    properties:
+                      analysisId:
+                        type: integer
+                        example: 5
+                      userId:
+                        type: integer
+                        example: 1
+                      messageId:
+                        type: integer
+                        example: 10
+                      category:
+                        type: string
+                        example: "ACTIVITY"
+                      extractedData:
+                        type: string
+                        example: "카페에서 시간을 보냄"
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: "2025-01-22T12:00:00.000Z"
+        500:
+          description: Error analyzing message.
+  /next-questions/generate-next-question:
+    post:
+      summary: Generate the next question based on previous answers
+      description: Analyze the user's previous answers and generate the next question to ask, following the category sequence.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  example: 1
+      responses:
+        201:
+          description: Next question generated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Next question generated successfully!"
+                  data:
+                    type: object
+                    properties:
+                      questionId:
+                        type: integer
+                        example: 5
+                      userId:
+                        type: integer
+                        example: 1
+                      question:
+                        type: string
+                        example: "어떤 활동을 하셨나요?"
+                      category:
+                        type: string
+                        example: "ACTIVITY"
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: "2025-01-22T12:00:00.000Z"
+        500:
+          description: Internal server error.

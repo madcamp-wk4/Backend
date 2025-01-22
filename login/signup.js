@@ -6,14 +6,15 @@ const prisma = new PrismaClient();
 // 회원가입 라우트
 router.post('/', async (req, res) => {
     try {
-        const { name, email, password } = req.body;
-        const newUser = await prisma.user.create({
-            data: { name, email, password },
-        });
+        const { name, email, password, passwordCheck} = req.body;
+        if (password != passwordCheck){
+            throw new Error("check your passwod again")
+        }
+        const newUser = await prisma.user.create({data: { name, email, password }});
         res.status(201).json(newUser);
     } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ error: 'Failed to create user' });
+        
+        res.status(500).json({ message : error.message});
     }
 });
 

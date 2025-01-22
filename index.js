@@ -16,7 +16,7 @@ app.get('/hello', (req, res) => {
 // 데이터베이스 연결 테스트
 testConnection();
 
-// const PORT = 3000;
-// app.listen(PORT, () => {
-//   console.log(`Server running at http://localhost:${PORT}/`);
-// });
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}/`);
+});

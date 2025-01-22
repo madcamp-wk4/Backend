@@ -33,6 +33,9 @@ app.get('/', (req, res) => {
     res.send('Hello, Express!');
 });
 
+app.get('/hello', (req, res) => {
+    res.send("TEST FOR")
+})
 // API 경로 설정
 app.use('/member/signIn', signupRoutes); // 회원가입 라우트 연결
 app.use('/member/login', loginRoutes);   // 로그인 라우트 연결

@@ -35,6 +35,14 @@ app.get("/", (req, res) => {
   res.send("Welcome to the DateRecords API");
 });
 
+app.get("/", (req, res) => {
+  res.send("Welcome to the DateRecords API");
+});
+
+app.get("/home", (req, res) => {
+  res.send("TEST FOR HOME");
+});
+
 // Swagger UI
 setupSwagger(app);
 

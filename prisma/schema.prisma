@@ -1,73 +1,3 @@
-// // This is your Prisma schema file,
-// // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-
-
-
-
-// model User {
-//   user_id             Int      @id @default(autoincrement())
-//   name           String
-//   email          String   @unique
-//   image_url      String?
-//   status         Role     @default(SOLO)
-//   createdAt      DateTime @default(now())
-//   loverAsUser1   Lover[]  @relation("user1") // User가 Lover의 user1Id로 연결된 관계
-//   loverAsUser2   Lover[]  @relation("user2") // User가 Lover의 user2Id로 연결된 
-//   messages       Messages[] @relation("message-user")
-//   dateRecord     DateWithLover[] @relation("dating-record")
-//   trust          Int?
-//   skinship       Int?
-//   admit          Int?
-//   present        Int?
-//   together_time  Int?
-//   feature        String?
-//   toRemember     String?
-//   location       String?
-// }
-
-// model Lover {
-//   loveTableId        Int      @id @default(autoincrement())
-//   user1     User     @relation("user1", fields: [user1Id], references: [user_id],  onDelete: Cascade) // User1 관계 설정
-//   user1Id   Int
-//   user2     User     @relation("user2", fields: [user2Id], references: [user_id]) // User2 관계 설정
-//   user2Id   Int
-//   createdAt DateTime @default(now())
-
-//   @@unique([user1Id, user2Id]) // User1과 User2 간의 1:1 관계 보장
-// }
-
-// model Messages { // 모든 메세지 저장
-//   messageId Int @id @default(autoincrement())
-//   sender Role? 
-//   text String
-//   user User @relation("message-user", fields: [userId], references: [user_id], onDelete: Cascade)
-//   userId Int 
-//   // user와 다:1 관계 
-// }
-
-// model Message_Result { // Messages에서 sender가 user인것만 모아서 요약하기 쿼리 짜고 -> 여기에 저장 
-//    id       Int      @id @default(autoincrement()) 
-//    //user  User @relation(fields: [])
-//    activity_type String  // 
-//    location String // location 여러개이면 이거 어떻게 저장하지? mysql에는 한 속성에 리스트가 들어갈 수가 없잖아 
-//    mood String 
-//    purpose String 
-// }
-
-
-// model DateWithLover {  // 데이트 목록 정리 
-//   id Int @id @default(autoincrement())
-//   dateTitle String 
-//   bigTopic String
-//   smallTopic String 
-//   score Int 
-//   user User @relation("dating-record", fields: [userId],references: [user_id], onDelete: Cascade )
-//   userId  Int 
-// }
 
  generator client {
    provider = "prisma-client-js"
@@ -220,7 +150,7 @@ model LoverAnalysisRequest {
 model LoverProfile {
   loverProfileId Int      @id @default(autoincrement())  
   userId         Int      // 프로필을 소유한 사용자 ID
-  user           User     @relation(fields: [userId], references: [user_id], onDelete: Cascade)
+  user           User?     @relation(fields: [userId], references: [user_id], onDelete: Cascade)
   name           String   // 애인의 이름 (문자열로 직접 입력)
   status         Sweet    @default(SOLO)  // 애인의 상태 (기본 SOLO)
   trust          Int?     // 신뢰도

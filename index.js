@@ -3,6 +3,8 @@ const bodyParser = require("body-parser");
 const dateRecordsRoutes = require("./routes/dateRecords");
 const messageRoutes = require("./routes/message");
 const messageAnalysisRoutes = require("./routes/messageAnalysis");
+const scoreRecordRoutes = require("./routes/scoreRecord"); // "채점" 라우트로 변경
+
 const setupSwagger = require("./swagger");
 const login = require('./routes/login')
 const signup = require('./routes/signup')
@@ -16,14 +18,20 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 app.use(express.json());
+app.use(cors({ origin: "*" }));
+
 // Routes
 app.use("/date-records", dateRecordsRoutes);
 app.use("/messages", messageRoutes);
 app.use("/message-analysis", messageAnalysisRoutes);
+<<<<<<< HEAD
 app.use("/login", login)
 app.use("/signup", signup)
 app.use("/profile/lover", loverProfile)
 app.use("/myProfile", myProfile)
+=======
+app.use("/score-record", scoreRecordRoutes); // 경로 추가
+>>>>>>> 8029ad870b5bc09006790206ab8beaef1f745089
 
 // Root route
 app.get("/", (req, res) => {

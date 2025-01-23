@@ -72,10 +72,10 @@ router.post("/", async (req, res) => {
     const lines = classificationContent.split("\n\n");
 
     // 각 줄에서 필요한 정보를 추출합니다.
-    const mainCategory1 = lines.find(line => line.includes("대분류 1"))?.split(":")[2]?.trim() || "N/A";
-    const mainCategory2 = lines.find(line => line.includes("대분류 2"))?.split(":")[2]?.trim() || "N/A";
-    const subCategory1 = lines.find(line => line.includes("소분류 1"))?.split(":")[2]?.trim() || "N/A";
-    const subCategory2 = lines.find(line => line.includes("소분류 2"))?.split(":")[2]?.trim() || "N/A";
+    const mainCategory1 = lines.find(line => line.includes("대분류 1"))?.split("**")[2]?.trim() || "N/A";
+    const mainCategory2 = lines.find(line => line.includes("대분류 2"))?.split("**")[2]?.trim() || "N/A";
+    const subCategory1 = lines.find(line => line.includes("소분류 1"))?.split("**")[2]?.trim() || "N/A";
+    const subCategory2 = lines.find(line => line.includes("소분류 2"))?.split("**")[2]?.trim() || "N/A";
     
     // 결과를 출력하거나 사용할 수 있습니다.
     console.log("Parsed Categories:");

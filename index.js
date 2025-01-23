@@ -14,6 +14,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 app.use(express.json());
+app.use(cors({ origin: "*" }));
 
 // Routes
 app.use("/date-records", dateRecordsRoutes);

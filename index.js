@@ -24,14 +24,11 @@ app.use(cors({ origin: "*" }));
 app.use("/date-records", dateRecordsRoutes);
 app.use("/messages", messageRoutes);
 app.use("/message-analysis", messageAnalysisRoutes);
-<<<<<<< HEAD
 app.use("/login", login)
 app.use("/signup", signup)
 app.use("/profile/lover", loverProfile)
 app.use("/myProfile", myProfile)
-=======
-app.use("/score-record", scoreRecordRoutes); // 경로 추가
->>>>>>> 8029ad870b5bc09006790206ab8beaef1f745089
+app.use("/score-record", scoreRecordRoutes); 
 
 // Root route
 app.get("/", (req, res) => {

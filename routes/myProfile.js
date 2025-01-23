@@ -4,28 +4,36 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const router = express.Router();
 
-
-router.put('/edit', async (req, res) => {
-    const { userId, name, status, skinship, trust, admit, present, together_time, feature } = req.body;
+/* 편집 버튼 누르면 나의 정보 수정 */
+router.put('/editInfo', async (req, res) => {
+    const { userId, name, status, skinship, trust, admit, present, together_time, feature, summarize } = req.body;
   
     try {
       // Validate request body
       if (!userId || !name ) {
         return res.status(400).json({ message: "Missing required fields" });
       }
+      const existingProfile = await prisma.user.findFirst({
+        where: { user_id: userId },
+    });
   
       // Update user profile
       const updatedProfile = await prisma.user.update({
         where: { user_id: userId }, // Locate the profile by userId
         data: {
-          name: name,                  // Update name
-          status: status || undefined, // Update status if provided
-          trust: trust || null, // Update trust score
-          skinship: skinship || null, // Update skinship score
-          admit: admit || null, // Update admit score
-          present: present || null, // Update present score
-          together_time: together_time || null, // Update together_time score
-          feature: feature || undefined, // Update feature if provided
+          name: name || existingProfile.name,
+          status: status || existingProfile.status,
+          trust: trust !== undefined ? trust : existingProfile.trust,
+          skinship: skinship !== undefined ? skinship : existingProfile.skinship,
+          admit: admit !== undefined ? admit : existingProfile.admit,
+          present: present !== undefined ? present : existingProfile.present,
+          together_time: together_time !== undefined ? together_time : existingProfile.together_time,
+          feature: feature 
+              ? `${existingProfile.feature ? `${existingProfile.feature}, ` : ''}${feature}`.trim() 
+              : existingProfile.feature,
+          summarize: summarize 
+          ? `${existingProfile.summarize ? `${existingProfile.summarize}, ` : ''}${summarize}`.trim() 
+          : existingProfile.summarize,    
         },
       });
   
@@ -38,4 +46,17 @@ router.put('/edit', async (req, res) => {
       return res.status(500).json({ message: "Failed to update profile" });
     }
   });
-  module.exports = router;
+
+/* 프론트에서 편집 버튼 누르면 지역 편집가능 */  
+router.put('/editLocation', async (req, res) => {
+    const {userId, location} = req.body
+
+    const updateLocation = await prisma.user.update({
+        where : {user_id : userId},
+        data : {
+            location : location
+        }
+    })
+});
+
+module.exports = router;

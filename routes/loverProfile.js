@@ -272,20 +272,38 @@ router.post('/loveScore', async(req, res) =>{
         };
 
         const scores = parseGeminiContent(geminiContent);
+        console.log(scores)
 
-        const saveToDatabase = async (userId, scores) => {
+        
+
+        // 데이터를 변환
+        const result = Object.fromEntries(
+        scores.map(item => {
+            const [key, value] = item.split(":");
+            return [key, parseInt(value, 10)];
+        })
+        );
+
+        
+        const saveToDatabase = async (userId) => {
             try {
                 // Get the opposite user's name
                 const opposite = await getOppositeUserName(userId)
+                console.log("--- ", opposite)
+                const id = await prisma.loverProfile.findFirst({
+                    where : {userId : userId},
+                    select : {loverProfileId : true}
+                })
+                
                 // Update the database
                 await prisma.loverProfile.update({
-                    where: { userId: userId }, // Match he correct user by userId
+                    where: { loverProfileId: id.loverProfileId }, // Match he correct user by userId
                     data: {
-                        trust: scores["trust"],     // Use scores parsed from Gemini
-                        together_time: scores["together_time"],
-                        present: scores["present"],
-                        admit: scores["admit"],
-                        skinship: scores["skinship"],
+                        trust: result["trust"],     // Use scores parsed from Gemini
+                        togetherTime: result["together_time"],
+                        present: result["present"],
+                        admit: result["admit"],
+                        skinship: result["skinship"],
                         name : opposite, 
                     },
                 });
@@ -296,14 +314,8 @@ router.post('/loveScore', async(req, res) =>{
                 throw new Error("Failed to save data to the database");
             }
         };
-        await saveToDatabase(userId, scores);
-        // Save the parsed data
-
-
-        // Return the scores in the response
-        //return res.status(200).json({ scores });
-
-        return res.status(201).json({ geminiResult: geminiResponse.data});
+        await saveToDatabase(userId);
+        return res.status(200).json({ result });
     }
     catch (error) {
         console.error("ERROR:", error.message);
@@ -313,6 +325,77 @@ router.post('/loveScore', async(req, res) =>{
 
 
 router.get('/getMyLoverInfo', async(req, res) => {
-    const loverInfo = await prisma.loverProfile.findMany
+    const {userId} = req.body
+    const loverInfo = await prisma.loverProfile.findMany({
+        where: { userId: parseInt(userId, 10) },
+        select: { 
+            trust: true,
+            togetherTime: true,
+            present: true,
+            admit: true,
+            skinship: true,
+            name: true,
+            status : true,
+            feature : true,
+            memorize : true,
+            location : true
+        },
+    })
+    return res.status(201).json(loverInfo)
+    
 })
+
+router.put('/editInfo', async (req, res) => {
+    const { userId, name, status, skinship, trust, admit, present, together_time, feature, memorize } = req.body;
+
+    try {
+        // Validate request body
+        if (!userId) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        // Fetch existing profile
+        const existingProfile = await prisma.loverProfile.findFirst({
+            where: { userId: userId },
+        });
+
+        if (!existingProfile) {
+            return res.status(404).json({ message: "Profile not found" });
+        }
+
+        // Merge existing data with new data
+        const updatedData = {
+            name: name || existingProfile.name,
+            status: status || existingProfile.status,
+            trust: trust !== undefined ? trust : existingProfile.trust,
+            skinship: skinship !== undefined ? skinship : existingProfile.skinship,
+            admit: admit !== undefined ? admit : existingProfile.admit,
+            present: present !== undefined ? present : existingProfile.present,
+            togetherTime: together_time !== undefined ? together_time : existingProfile.together_time,
+            feature: feature 
+                ? `${existingProfile.feature ? `${existingProfile.feature}, ` : ''}${feature}`.trim() 
+                : existingProfile.feature,
+            memorize: memorize 
+                ? `${existingProfile.memorize ? `${existingProfile.memorize}, ` : ''}${memorize}`.trim() 
+                : existingProfile.memorize,
+        };
+
+        // Update the profile
+        const updatedProfile = await prisma.loverProfile.update({
+            where: { loverProfileId: existingProfile.loverProfileId },
+            data: updatedData,
+        });
+
+        return res.status(200).json({
+            message: "Profile updated successfully",
+            profile: updatedProfile,
+        });
+    } catch (error) {
+        console.error("Error updating profile:", error.message);
+        return res.status(500).json({ message: "Failed to update profile" });
+    }
+});
+
+
 module.exports = router; 
+

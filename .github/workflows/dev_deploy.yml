@@ -28,6 +28,12 @@ jobs:
           EC2_USER: ubuntu
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Create .env file
+        run: |
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+        shell: bash
+
       - name: Copy Workspace
         run: |
           ssh todate-madcamp-wk4 'sudo mkdir -p /opt/app'

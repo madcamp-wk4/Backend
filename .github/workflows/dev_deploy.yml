@@ -18,7 +18,7 @@ jobs:
           echo "$EC2_SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           cat >>~/.ssh/config <<END
-          Host playground-umc-7th
+          Host todate-madcamp-wk4
             HostName $EC2_HOST
             User $EC2_USER
             IdentityFile ~/.ssh/id_rsa
@@ -30,17 +30,17 @@ jobs:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
       - name: Copy Workspace
         run: |
-          ssh playground-umc-7th 'sudo mkdir -p /opt/app'
-          ssh playground-umc-7th 'sudo chown ubuntu:ubuntu /opt/app'
-          scp -r ./[!.]* playground-umc-7th:/opt/app
+          ssh todate-madcamp-wk4 'sudo mkdir -p /opt/app'
+          ssh todate-madcamp-wk4 'sudo chown ubuntu:ubuntu /opt/app'
+          scp -r ./[!.]* todate-madcamp-wk4:/opt/app
       - name: Install dependencies
         run: |
-          ssh playground-umc-7th 'npm install --prefix /opt/app/'
+          ssh todate-madcamp-wk4 'npm install --prefix /opt/app/'
       - name: Copy systemd service file
         run: |
-          ssh playground-umc-7th '
+          ssh todate-madcamp-wk4 '
             echo "[Unit]
-            Description=UMC 7th Project
+            Description=Todate-madcamp-wk4
             After=network.target
             [Service]
             User=${USER}
@@ -51,11 +51,12 @@ jobs:
           '
       - name: Enable systemd service
         run: |
-          ssh playground-umc-7th 'sudo systemctl daemon-reload'
-          ssh playground-umc-7th 'sudo systemctl enable app'
+          ssh todate-madcamp-wk4 'sudo systemctl daemon-reload'
+          ssh todate-madcamp-wk4 'sudo systemctl enable app'
       - name: Restart systemd service
         run: |
-          ssh playground-umc-7th 'sudo systemctl restart app'
+          ssh todate-madcamp-wk4 'sudo systemctl restart app'
+
 #     runs-on: ubuntu-latest
 #     steps:
 #       - name: Checkout
@@ -68,7 +69,7 @@ jobs:
 #           chmod 600 ~/.ssh/id_rsa
 
 #           cat >>~/.ssh/config <<END
-#           Host playground-umc-7th
+#           Host todate-madcamp-wk4
 #             HostName $EC2_HOST
 #             User $EC2_USER
 #             IdentityFile ~/.ssh/id_rsa
@@ -81,17 +82,17 @@ jobs:
 
 #       - name: Copy Workspace
 #         run: |
-#           ssh playground-umc-7th 'sudo mkdir -p /opt/app'
-#           ssh playground-umc-7th 'sudo chown ubuntu:ubuntu /opt/app'
-#           scp -r ./[!.]* playground-umc-7th:/opt/app
+#           ssh todate-madcamp-wk4 'sudo mkdir -p /opt/app'
+#           ssh todate-madcamp-wk4 'sudo chown ubuntu:ubuntu /opt/app'
+#           scp -r ./[!.]* todate-madcamp-wk4:/opt/app
 
 #       - name: Install dependencies
 #         run: |
-#           ssh playground-umc-7th 'npm install --prefix /opt/app/'
+#           ssh todate-madcamp-wk4 'npm install --prefix /opt/app/'
 
 #       - name: Configure Nginx for HTTPS
 #         run: |
-#           ssh playground-umc-7th '
+#           ssh todate-madcamp-wk4 '
 #             sudo apt update &&
 #             sudo apt install -y nginx certbot python3-certbot-nginx &&
 #             echo "server {
@@ -125,7 +126,7 @@ jobs:
 
 #       - name: Enable HTTPS with Certbot (IP Address)
 #         run: |
-#           ssh playground-umc-7th '
+#           ssh todate-madcamp-wk4 '
 #             sudo certbot certonly --nginx --register-unsafely-without-email --agree-tos -d $IP_ADDRESS
 #           '
 #         env:
@@ -133,7 +134,7 @@ jobs:
 
 #       - name: Copy systemd service file
 #         run: |
-#           ssh playground-umc-7th '
+#           ssh todate-madcamp-wk4 '
 #             echo "[Unit]
 #             Description=UMC 7th Project
 #             After=network.target
@@ -149,9 +150,9 @@ jobs:
 
 #       - name: Enable systemd service
 #         run: |
-#           ssh playground-umc-7th 'sudo systemctl daemon-reload'
-#           ssh playground-umc-7th 'sudo systemctl enable app'
+#           ssh todate-madcamp-wk4 'sudo systemctl daemon-reload'
+#           ssh todate-madcamp-wk4 'sudo systemctl enable app'
 
 #       - name: Restart systemd service
 #         run: |
-#           ssh playground-umc-7th 'sudo systemctl restart app'
+#           ssh todate-madcamp-wk4 'sudo systemctl restart app'
